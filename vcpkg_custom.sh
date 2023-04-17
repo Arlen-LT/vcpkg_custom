@@ -10,13 +10,13 @@ usage(){
 
 install(){
 
-    if [[ "$1" != "python3" ]]; then
-        echo "Not yet support this port"
-        exit 1;
+    if [[ "$1" == "python3" ]]; then
+        prerequisite_python3
+        #echo "Not yet support this port"
     fi
 
     SOURCE_DIR=$PWD
-    PORT=python3
+    PORT=$1
     TRIPLET=arm64-android
 
     # For vcpkg required
@@ -30,6 +30,12 @@ install(){
     pushd $VCPKG_ROOT
     ./vcpkg install ${PORT}:${TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets
     popd
+}
+
+prerequisite_python3(){
+    # For python3 cross-compile required
+    export READELF=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf
+    export CONFIG_SITE=${SOURCE_DIR}/ports/${PORT}/config_site
 }
 
 options=$(getopt -n "Installing VS Code Server" -l "help,version,install:" -o "hv" -a -- "$@")
