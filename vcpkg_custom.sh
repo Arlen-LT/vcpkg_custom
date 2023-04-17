@@ -1,8 +1,9 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 usage(){
     echo "Usage: ${0##*/} [options]"
     echo "--install <port_name>      install package"
+    echo "--remove <port_name>       remove package"
     echo "--version                  show version"
     echo "--help                     show usage infomation"
     exit 0
@@ -27,6 +28,15 @@ install(){
     popd
 }
 
+remove(){
+    PORT=$1
+    TRIPLET=arm64-android
+
+    pushd $VCPKG_ROOT
+    ./vcpkg remove ${PORT}:${TRIPLET}
+    popd
+}
+
 prerequisite_python3(){
     # For python3 cross-compile required
     export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
@@ -43,12 +53,13 @@ prerequisite_python3(){
     export YASM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/yasm
 }
 
-options=$(getopt -n "vcpkg_custom" -l "help,version,install:" -o "hv" -a -- "$@")
+options=$(getopt -n "vcpkg_custom" -l "help,version,install:,remove:" -o "hv" -a -- "$@")
 eval set -- ${options}
 while true
 do
     case "$1" in
     	--install) shift; install $1 ;;
+    	--remove) shift; remove $1 ;;
     	-h | --help) usage ;;
     	--version) echo "${0##*/} worked with vcpkg:203383666e2422ed31e1faebe6efa6e306bd126d"; exit 0 ;;
     	--) shift; break;;
