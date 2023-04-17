@@ -12,7 +12,6 @@ install(){
 
     if [[ "$1" == "python3" ]]; then
         prerequisite_python3
-        #echo "Not yet support this port"
     fi
 
     SOURCE_DIR=$PWD
@@ -22,10 +21,6 @@ install(){
     # For vcpkg required
     export ANDROID_NDK_HOME=$ANDROID_NDK
 
-    # For python3 cross-compile required
-    export READELF=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf
-    export CONFIG_SITE=${SOURCE_DIR}/ports/${PORT}/config_site
-
     # clone vcpkg and install
     pushd $VCPKG_ROOT
     ./vcpkg install ${PORT}:${TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets
@@ -34,7 +29,6 @@ install(){
 
 prerequisite_python3(){
     # For python3 cross-compile required
-    export CONFIG_SITE=${SOURCE_DIR}/ports/${PORT}/config_site
     export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
     export AS=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-as
     export LD=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/ld
@@ -49,7 +43,7 @@ prerequisite_python3(){
     export YASM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/yasm
 }
 
-options=$(getopt -n "Installing VS Code Server" -l "help,version,install:" -o "hv" -a -- "$@")
+options=$(getopt -n "vcpkg_custom" -l "help,version,install:" -o "hv" -a -- "$@")
 eval set -- ${options}
 while true
 do
