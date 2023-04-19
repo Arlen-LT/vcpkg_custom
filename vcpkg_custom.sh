@@ -10,35 +10,36 @@ usage(){
 }
 
 install(){
-
-    if [[ "$1" == "python3" ]]; then
-        prerequisite_python3
-    fi
-
     SOURCE_DIR=$PWD
     PORT=$1
-    TRIPLET=arm64-android
+    BUILD_TRIPLET=x64-linux
+    HOST_TRIPLET=arm64-android
 
     # For vcpkg required
     export ANDROID_NDK_HOME=$ANDROID_NDK
 
     # clone vcpkg and install
     pushd $VCPKG_ROOT
-    ./vcpkg install ${PORT}:${TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets
+    ./vcpkg install ${PORT}:${BUILD_TRIPLET}
+
+    prerequisite_env
+    ./vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env
     popd
 }
 
 remove(){
     PORT=$1
-    TRIPLET=arm64-android
+    HOST_TRIPLET=arm64-android
 
     pushd $VCPKG_ROOT
-    ./vcpkg remove ${PORT}:${TRIPLET}
+    ./vcpkg remove ${PORT}:${HOST_TRIPLET}
     popd
 }
 
-prerequisite_python3(){
+prerequisite_env(){
     # For python3 cross-compile required
+    export CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang
+    export CXX=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++
     export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
     export AS=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-as
     export LD=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/ld
@@ -51,6 +52,7 @@ prerequisite_python3(){
     export READELF=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf
     export STRIP=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
     export YASM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/yasm
+    #patchelf --set-soname libpython3.10.so $VCPKG_ROOT/installed/arm64-android/lib/libpython3.10.so
 }
 
 options=$(getopt -n "vcpkg_custom" -l "help,version,install:,remove:" -o "hv" -a -- "$@")
@@ -66,5 +68,3 @@ do
     esac
     shift
 done
-
-

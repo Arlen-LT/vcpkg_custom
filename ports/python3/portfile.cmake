@@ -3,6 +3,11 @@ if (VCPKG_LIBRARY_LINKAGE STREQUAL dynamic AND VCPKG_CRT_LINKAGE STREQUAL static
     set(VCPKG_LIBRARY_LINKAGE static)
 endif()
 
+if (VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
+    message(STATUS "Warning: static library with cross-compiling is not supported. Building dynamic library.")
+    set(VCPKG_LIBRARY_LINKAGE dynamic)
+endif()
+
 set(PYTHON_VERSION_MAJOR  3)
 set(PYTHON_VERSION_MINOR  10)
 set(PYTHON_VERSION_PATCH  7)
