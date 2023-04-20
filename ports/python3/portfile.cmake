@@ -230,6 +230,7 @@ else()
         "--with-system-expat"
         "--without-readline"
         "--disable-test-modules"
+        "--without-tcltk"
         # For CONFIG_SITE property needed while cross-compile
         "ac_cv_file__dev_ptmx=yes"
         "ac_cv_file__dev_ptc=no" 
