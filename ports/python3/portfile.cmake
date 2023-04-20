@@ -3,11 +3,6 @@ if (VCPKG_LIBRARY_LINKAGE STREQUAL dynamic AND VCPKG_CRT_LINKAGE STREQUAL static
     set(VCPKG_LIBRARY_LINKAGE static)
 endif()
 
-if (VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
-    message(STATUS "Warning: static library with cross-compiling is not supported. Building dynamic library.")
-    set(VCPKG_LIBRARY_LINKAGE dynamic)
-endif()
-
 set(PYTHON_VERSION_MAJOR  3)
 set(PYTHON_VERSION_MINOR  10)
 set(PYTHON_VERSION_PATCH  7)
@@ -24,6 +19,12 @@ set(PATCHES
     0012-force-disable-curses.patch
     0013-configure-no-libcrypt.patch  # https://github.com/python/cpython/pull/28881
 )
+
+if (VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
+    message(STATUS "Warning: static library with cross-compiling is not supported. Building dynamic library.")
+    set(VCPKG_LIBRARY_LINKAGE dynamic)
+    list(APPEND PATCHES 0014-disable-SOVERSION-for-Android.patch)
+endif()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")
     list(APPEND PATCHES 0002-static-library.patch)
