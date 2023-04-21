@@ -20,6 +20,9 @@ export SYSROOT=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 BUILD_TRIPLET=x64-linux
 HOST_TRIPLET=arm64-android
 
+SOURCE_DIR=$(dirname $(realpath $0))
+INSTALL_DIR=${SOURCE_DIR}/installed
+
 usage(){
     echo "Usage: ${0##*/} [options]"
     echo "--install <port_name>      install package"
@@ -29,8 +32,8 @@ usage(){
     exit 0
 }
 
-install(){
-    SOURCE_DIR=$(dirname $(realpath $0))
+install_package(){
+
     PORT=$1
 
     # Must install BUILD_TRIPLET first
@@ -40,17 +43,17 @@ install(){
     ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env
 
     if [[ "$1" == "python3" ]]; then
-        handle_python3_artifact ${SOURCE_DIR}/installed/${PORT}
+        handle_python3_artifact ${INSTALL_DIR}/${PORT}
     fi
 }
 
-remove(){
+remove_package(){
     ${VCPKG_ROOT}/vcpkg remove $1:${HOST_TRIPLET}
 }
 
 handle_python3_artifact(){
     PYTHON3_ARITFACT_DIR=$1
-    CROSSENV_DIR=${PYTHON3_ARITFACT_DIR}/../venv
+    CROSSENV_DIR=${INSTALL_DIR}/venv
 
     if [ -d ${PYTHON3_ARITFACT_DIR} ]; then
         rm -rf ${PYTHON3_ARITFACT_DIR}
@@ -61,6 +64,7 @@ handle_python3_artifact(){
     fi
 
     # fake a common installed python directory structure to let crossenv know where to find include headers and libraries.
+    mkdir -p ${INSTALL_DIR}
     cp -R ${VCPKG_ROOT}/packages/python3_${HOST_TRIPLET} ${PYTHON3_ARITFACT_DIR} \
         && mv ${PYTHON3_ARITFACT_DIR}/tools/python3 ${PYTHON3_ARITFACT_DIR}/bin
 
@@ -81,8 +85,8 @@ eval set -- ${options}
 while true
 do
     case "$1" in
-    	--install) shift; install $1 ;;
-    	--remove) shift; remove $1 ;;
+    	--install) shift; install_package $1 ;;
+    	--remove) shift; remove_package $1 ;;
     	-h | --help) usage ;;
     	--version) echo "${0##*/} worked with vcpkg:203383666e2422ed31e1faebe6efa6e306bd126d"; exit 0 ;;
     	--) shift; break;;
