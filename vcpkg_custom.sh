@@ -48,7 +48,9 @@ install_package(){
 }
 
 remove_package(){
-    ${VCPKG_ROOT}/vcpkg remove $1:${HOST_TRIPLET}
+    PORT=$1
+    rm -rf ${INSTALL_DIR}/${PORT}
+    ${VCPKG_ROOT}/vcpkg remove ${PORT}:${HOST_TRIPLET}
 }
 
 handle_python3_artifact(){
@@ -78,6 +80,7 @@ handle_python3_artifact(){
     . ${CROSSENV_DIR}/bin/activate
     cross-pip install yt-dlp
     cp -r ${CROSSENV_DIR}/cross/lib/python3.10/site-packages/* ${PYTHON3_ARITFACT_DIR}/lib/python3.10/site-packages/
+    7z a python3.zip ${PYTHON3_ARITFACT_DIR}/*
 }
 
 options=$(getopt -n "${0##*/}" -l "help,version,install:,remove:" -o "h" -a -- "$@")
