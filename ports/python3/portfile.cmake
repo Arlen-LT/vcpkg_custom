@@ -18,14 +18,15 @@ set(PATCHES
     0010-dont-skip-rpath.patch
     0012-force-disable-curses.patch
     0013-configure-no-libcrypt.patch  # https://github.com/python/cpython/pull/28881
+    0014-fix-get-python-inc-output.patch
 )
 
 if (VCPKG_CMAKE_SYSTEM_NAME STREQUAL "Android")
     message(STATUS "Warning: static library with cross-compiling is not supported. Building dynamic library.")
     set(VCPKG_LIBRARY_LINKAGE dynamic)
     list(APPEND PATCHES 
-        0014-disable-SOVERSION-for-Android.patch
-        0015-explicit-define-ctypes_pythonapi-for-Android.patch
+        0015-disable-SOVERSION-for-Android.patch
+        0016-explicit-define-ctypes_pythonapi-for-Android.patch
     )
 endif()
 
