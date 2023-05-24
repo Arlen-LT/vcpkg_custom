@@ -40,7 +40,7 @@ install_package(){
     /bin/bash -c "${VCPKG_ROOT}/vcpkg install ${PORT}:${BUILD_TRIPLET}"
 
     # use overlay ports & triplets
-    ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env
+    ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env --binarysource=clear
 
     if [[ "$1" == "python3" ]]; then
         handle_python3_artifact ${INSTALL_DIR}/${PORT}
@@ -93,7 +93,7 @@ do
     	--install) shift; install_package $1 ;;
     	--remove) shift; remove_package $1 ;;
     	-h | --help) usage ;;
-    	--version) echo "${0##*/} worked with vcpkg:203383666e2422ed31e1faebe6efa6e306bd126d"; exit 0 ;;
+    	--version) echo "${0##*/} worked with vcpkg:95252eadd63118201b0d0df0b4360fa613f0de84"; exit 0 ;;
     	--) shift; break;;
     esac
     shift
