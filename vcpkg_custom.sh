@@ -93,7 +93,7 @@ do
     	--install) shift; install_package $1 ;;
     	--remove) shift; remove_package $1 ;;
     	-h | --help) usage ;;
-    	--version) echo "${0##*/} worked with vcpkg:95252eadd63118201b0d0df0b4360fa613f0de84"; exit 0 ;;
+    	--version) echo "${0##*/} worked with vcpkg:78a727b60864afa46c3c73148e6780b02de25ef5"; exit 0 ;;
     	--) shift; break;;
     esac
     shift
