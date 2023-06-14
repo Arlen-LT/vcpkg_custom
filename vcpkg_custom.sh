@@ -1,8 +1,9 @@
 #!/bin/bash -eu
 
+export ANDROID_API_LEVEL=29
 export ANDROID_NDK_HOME=${ANDROID_NDK} # For vcpkg required
-export CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang
-export CXX=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android29-clang++
+export CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang
+export CXX=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang++
 export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 export AS=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-as
 export LD=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/ld
@@ -40,7 +41,7 @@ install_package(){
     /bin/bash -c "${VCPKG_ROOT}/vcpkg install ${PORT}:${BUILD_TRIPLET}"
 
     # use overlay ports & triplets
-    ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env --binarysource=clear
+    ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env --binarysource=clear --enforce-port-checks
 
     if [[ "$1" == "python3" ]]; then
         handle_python3_artifact ${INSTALL_DIR}/${PORT}
