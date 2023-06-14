@@ -1,23 +1,5 @@
 #!/bin/bash -eu
 
-export ANDROID_API_LEVEL=29
-export ANDROID_NDK_HOME=${ANDROID_NDK} # For vcpkg required
-export CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang
-export CXX=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang++
-export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
-export AS=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-as
-export LD=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/ld
-export LINK=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-link
-export NM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm
-export OBJCOPY=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objcopy
-export OBJDUMP=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump
-export PROFDATA=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-profdata
-export RANLIB=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib
-export READELF=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf
-export STRIP=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
-export YASM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/yasm
-export SYSROOT=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-
 BUILD_TRIPLET=x64-linux
 HOST_TRIPLET=arm64-android
 
@@ -33,22 +15,68 @@ usage(){
     exit 0
 }
 
-install_package(){
-
+install_package()
+{
     PORT=$1
 
-    # Must install BUILD_TRIPLET first
-    /bin/bash -c "${VCPKG_ROOT}/vcpkg install ${PORT}:${BUILD_TRIPLET}"
+    if [ ! -d ${SOURCE_DIR}/ports/${PORT} ]; then
+        echo "${PORT} not found, please try to search in official microsoft/vcpkg"
+        exit -1
+    fi
+
+    pycode=$(cat << END
+
+import json,sys
+fp=open("${SOURCE_DIR}/ports/${PORT}/vcpkg.json")
+obj=json.load(fp)
+if "dependencies" not in obj:
+    print(False)
+    exit(0)
+for item in obj["dependencies"]:
+    if isinstance(item, dict) and item["name"] == "${PORT}":
+        print(item["host"])
+        exit(0)
+    else:
+        continue
+print(False)
+exit(0)
+
+END
+)
+
+    if [ $(python -c "${pycode}") == "True" ] && [ -z $($VCPKG_ROOT/vcpkg list ${PORT}:${BUILD_TRIPLET}) ]; then
+        echo "This script is for cross-compiling, you must need install ${PORT}:${BUILD_TRIPLET} first"
+        exit -2
+    fi
+
+    export ANDROID_API_LEVEL=29
+    export ANDROID_NDK_HOME=${ANDROID_NDK} # For vcpkg required
+    export CC=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang
+    export CXX=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android${ANDROID_API_LEVEL}-clang++
+    export AR=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
+    export AS=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-as
+    export LD=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/ld
+    export LINK=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-link
+    export NM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm
+    export OBJCOPY=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objcopy
+    export OBJDUMP=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump
+    export PROFDATA=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-profdata
+    export RANLIB=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib
+    export READELF=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf
+    export STRIP=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+    export YASM=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/yasm
+    export SYSROOT=$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot
 
     # use overlay ports & triplets
     ${VCPKG_ROOT}/vcpkg install ${PORT}:${HOST_TRIPLET} --overlay-ports=${SOURCE_DIR}/ports --overlay-triplets=${SOURCE_DIR}/triplets --debug-env --binarysource=clear --enforce-port-checks
 
-    if [[ "$1" == "python3" ]]; then
+    if [ "${PORT}" == "python3" ]; then
         handle_python3_artifact ${INSTALL_DIR}/${PORT}
     fi
 }
 
-remove_package(){
+remove_package()
+{
     PORT=$1
     rm -rf ${INSTALL_DIR}/${PORT}
     ${VCPKG_ROOT}/vcpkg remove ${PORT}:${HOST_TRIPLET}
@@ -91,11 +119,11 @@ eval set -- ${options}
 while true
 do
     case "$1" in
-    	--install) shift; install_package $1 ;;
-    	--remove) shift; remove_package $1 ;;
-    	-h | --help) usage ;;
-    	--version) echo "${0##*/} worked with vcpkg:78a727b60864afa46c3c73148e6780b02de25ef5"; exit 0 ;;
-    	--) shift; break;;
+        --install) shift; install_package $1 ;;
+        --remove) shift; remove_package $1 ;;
+        -h | --help) usage ;;
+        --version) echo "${0##*/} worked with vcpkg:a487471068f4cb1cbb4eeb340763cdcc0a75fd68"; exit 0 ;;
+        --) shift; break;;
     esac
     shift
 done
