@@ -1,0 +1,59 @@
+stages:
+  - .pre
+  - build
+  - test
+  - deploy
+  - .post
+
+Pre-Build-Environment:
+  stage: .pre
+  image: arlenlt/android-cross-compiler:latest
+  tags:
+    - docker
+  script:
+    - ${VCPKG_ROOT}/vcpkg list
+    - cmake --version
+    - pyenv versions
+    - python --version
+
+Pre-Build-Environment_win64:
+  stage: .pre
+  tags:
+    - msvc
+  script:
+    - echo $PATH
+    - git --version
+    - |
+      & "${WINRUNNER_CMAKE_DIR}/bin/cmake.exe" --version
+    - ls "C:\Program Files\CMake\bin"
+    - |
+      & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -version [17.0,18.0] -all
+
+.CI_VARIABLES: &CI_VARIABLES
+  GIT_STRATEGY: clone
+  GIT_SUBMODULE_STRATEGY: recursive
+   
+build_arm64:
+  stage: build
+  image: arlenlt/android-cross-compiler:latest
+  tags:
+    - docker
+  variables:
+    <<: *CI_VARIABLES
+  script:
+    - chmod +x ./vcpkg_custom.sh && ./vcpkg_custom.sh --install python3
+  artifacts:
+    paths:
+      - ./python3.zip
+
+build_win64:
+  stage: build
+  tags:
+    - msvc
+  variables:
+    <<: *CI_VARIABLES
+  script:
+    - ./vcpkg_custom.ps1
+  artifacts:
+    paths:
+      - ./python3_windows.zip
