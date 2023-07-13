@@ -103,11 +103,11 @@ handle_python3_artifact(){
     sed -i -e '2,3d' -e "1a _base = \'${PYTHON3_ARITFACT_DIR}\'" ${SYSCONFIG}
     
     pyenv global 3.10.7
-    pip install crossenv
+    pip install --upgrade pip crossenv
     python3 -m crossenv --sysconfigdata-file=${SYSCONFIG} \
         --sysroot=${SYSROOT} --env LDFLAGS="-lpython3.10" ${PYTHON3_ARITFACT_DIR}/bin/python3.10 ${CROSSENV_DIR}
     . ${CROSSENV_DIR}/bin/activate
-    cross-pip install yt-dlp
+    cross-pip install --upgrade pip yt-dlp
     cp -r ${CROSSENV_DIR}/cross/lib/python3.10/site-packages/* ${PYTHON3_ARITFACT_DIR}/lib/python3.10/site-packages/
     find ${PYTHON3_ARITFACT_DIR} -depth -name '__pycache__' -exec rm -rf {} ';'
     find ${PYTHON3_ARITFACT_DIR} -name '*.py[co]' -exec rm -f {} ';'
